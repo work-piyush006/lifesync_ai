@@ -30,7 +30,7 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure Android folder exists
+      # 4️⃣ Ensure minimal Android folder
       - name: Ensure Android folder
         run: |
           if [ ! -f "android/app/build.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
@@ -38,48 +38,41 @@ jobs:
             flutter create . --platforms android
           else
             echo "✅ Minimal Android folder exists"
+          fi
 
-      # 5️⃣ Copy your 4 custom Android files
-      - name: Copy custom Android files
+      # 5️⃣ Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 6️⃣ Lock critical plugins versions
+      - name: Lock geolocator & other plugins
         run: |
-          cp ./custom_android_files/build.gradle android/app/build.gradle
-          cp ./custom_android_files/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
-          cp ./custom_android_files/settings.gradle android/settings.gradle
-          cp ./custom_android_files/build.gradle android/build.gradle
+          flutter pub add geolocator:^14.0.2
+          flutter pub add audioplayers:^6.1.0
+          flutter pub add flutter_plugin_android_lifecycle:^2.0.26
+          flutter pub get
 
-      # 6️⃣ Ensure AndroidX migration & Gradle plugin fix
-      - name: Fix AndroidX & Flutter Gradle Plugin
+      # 7️⃣ Set Android SDK versions
+      - name: Set Android SDK versions
         run: |
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
           sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
           sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
-          sed -i '/apply plugin: "com.android.application"/a apply plugin: "kotlin-android"' android/app/build.gradle
-          sed -i '/apply plugin: "com.android.application"/a apply plugin: "org.jetbrains.kotlin.android"' android/app/build.gradle
+          echo "✅ SDK versions set"
 
-      # 7️⃣ Force Gradle version
+      # 8️⃣ Force Gradle version
       - name: Force Gradle version
         run: |
           sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
 
-      # 8️⃣ Generate local.properties
+      # 9️⃣ Generate local.properties for CI
       - name: Generate local.properties
         run: |
           echo "flutter.sdk=/opt/hostedtoolcache/flutter/stable-3.24.3-x64" > android/local.properties
           echo "sdk.dir=/usr/lib/android-sdk" >> android/local.properties
+          echo "✅ local.properties created"
 
-      # 9️⃣ Install dependencies
-      - name: Install dependencies
-        run: flutter pub get
-
-      # 🔟 Lock critical plugin versions
-      - name: Lock plugin versions
-        run: |
-          flutter pub add geolocator:^14.0.2
-          flutter pub add audioplayers:^6.4.0
-          flutter pub add flutter_plugin_android_lifecycle:^2.0.30
-          flutter pub get
-
-      # 1️⃣1️⃣ Check launcher icon
+      # 🔟 Check launcher icon
       - name: Check launcher icon
         run: |
           if [ ! -f "assets/logo.png" ]; then
@@ -87,24 +80,25 @@ jobs:
             exit 1
           else
             echo "✅ Launcher icon found"
+          fi
 
-      # 1️⃣2️⃣ Generate launcher icons
+      # 1️⃣1️⃣ Generate Launcher Icons
       - name: Generate Launcher Icons
         run: flutter pub run flutter_launcher_icons
 
-      # 1️⃣3️⃣ Clean project
+      # 1️⃣2️⃣ Clean Flutter project
       - name: Clean Flutter project
         run: flutter clean
 
-      # 1️⃣4️⃣ Get dependencies again
+      # 1️⃣3️⃣ Get dependencies again
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 1️⃣5️⃣ Build Release APK
+      # 1️⃣4️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 1️⃣6️⃣ Upload Release APK
+      # 1️⃣5️⃣ Upload Release APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
