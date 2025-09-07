@@ -38,14 +38,22 @@ jobs:
       # 5️⃣ Force Gradle version for compatibility
       - name: Force Gradle version
         run: |
-          sed -i 's/distributionUrl=.*$/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
+          sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
           echo "✅ Forced Gradle 8.6"
 
-      # 6️⃣ Build Release APK
+      # 6️⃣ Set SDK versions for plugins (compileSdkVersion 35)
+      - name: Set SDK versions
+        run: |
+          echo "⚡ Updating compileSdkVersion and targetSdkVersion to 35..."
+          sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
+          sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
+          echo "✅ SDK versions set"
+
+      # 7️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release
 
-      # 7️⃣ Upload Release APK as artifact
+      # 8️⃣ Upload Release APK as artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
