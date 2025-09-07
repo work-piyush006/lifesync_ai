@@ -30,21 +30,22 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure minimal Android folder
-      - name: Ensure minimal Android folder
+      # 4️⃣ Ensure Android folder
+      - name: Ensure Android folder
         run: |
-          if [ ! -f "android/app/build.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
-            echo "⚠️ Minimal Android files missing! Generating full Android folder..."
+          if [ ! -f "android/app/build.gradle" ]; then
+            echo "⚠️ Android folder missing! Generating full Android folder..."
             flutter create . --platforms android
           else
             echo "✅ Minimal Android folder exists"
+          fi
 
       # 5️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 6️⃣ Lock critical plugin versions
-      - name: Lock critical plugins
+      # 6️⃣ Lock critical plugins versions
+      - name: Lock plugins
         run: |
           flutter pub add geolocator:^14.0.2
           flutter pub add audioplayers:^6.1.0
@@ -52,7 +53,7 @@ jobs:
           flutter pub get
 
       # 7️⃣ Set Android SDK versions
-      - name: Set Android SDK versions
+      - name: Set SDK versions
         run: |
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
           sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
@@ -71,7 +72,7 @@ jobs:
           echo "sdk.dir=/usr/lib/android-sdk" >> android/local.properties
           echo "✅ local.properties created"
 
-      # 🔟 Check launcher icon exists
+      # 🔟 Check launcher icon
       - name: Check launcher icon
         run: |
           if [ ! -f "assets/logo.png" ]; then
