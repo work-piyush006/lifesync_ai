@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout repo
       - name: Checkout Repository
         uses: actions/checkout@v3
 
@@ -34,36 +34,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
-      # 4️⃣ Ensure full Android folder with v2 embedding
-      - name: Ensure full Android folder (v2 embedding)
+      # 4️⃣ Ensure full Android folder (delete old if incomplete)
+      - name: Ensure full Android folder
         run: |
-          echo "Recreating Android folder for Flutter v2 embedding..."
-          # Backup existing .gitignore
-          if [ -f android/.gitignore ]; then
-            cp android/.gitignore android/.gitignore.backup
-          fi
-          # Remove old Android folder (even if empty or v1)
           rm -rf android
-          # Create new Android folder
           flutter create .
-          # Restore .gitignore if it existed
-          if [ -f android/.gitignore.backup ]; then
-            mv android/.gitignore.backup android/.gitignore
-          fi
 
       # 5️⃣ Get dependencies
       - name: Flutter Pub Get
         run: flutter pub get
 
-      # 7️⃣ Build Debug APK
+      # 6️⃣ Build Debug APK
       - name: Build APK (Debug)
         run: flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
 
-      # 8️⃣ Build Release APK (private)
+      # 7️⃣ Build Release APK (private)
       - name: Build APK (Release)
         run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
 
-      # 9️⃣ Upload APKs
+      # 8️⃣ Upload APKs
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
