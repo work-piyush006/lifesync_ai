@@ -17,20 +17,21 @@ jobs:
       FLUTTER_VERSION: '3.13.10' # Change to your Flutter version
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout Repo
         uses: actions/checkout@v3
 
+      # 2️⃣ Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      - name: Enable Flutter web (optional)
+      # 3️⃣ Enable Flutter web (optional, ignore if not used)
+      - name: Enable Flutter web
         run: flutter config --enable-web
 
-      - name: Flutter Pub Get
-        run: flutter pub get
-
+      # 4️⃣ Cache pub packages
       - name: Cache Pub Packages
         uses: actions/cache@v3
         with:
@@ -41,20 +42,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
+      # 5️⃣ Get dependencies
+      - name: Flutter Pub Get
+        run: flutter pub get
+
+      # 6️⃣ Analyze code
       - name: Analyze
         run: flutter analyze
 
+      # 7️⃣ Run tests
       - name: Run Tests
         run: flutter test --coverage
 
+      # 8️⃣ Build Debug APK
       - name: Build APK (Debug)
         run: flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
 
+      # 9️⃣ Build Release APK
       - name: Build APK (Release)
         run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
 
+      # 🔟 Upload artifacts (v4)
       - name: Upload APKs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lifesync-apks
           path: build/app/outputs/flutter-apk/*.apk
