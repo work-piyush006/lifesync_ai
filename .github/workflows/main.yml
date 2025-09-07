@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -30,11 +30,11 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure Android folder
+      # 4️⃣ Ensure Android folder + essential files exist
       - name: Ensure Android folder
         run: |
-          if [ ! -f "android/app/build.gradle" ]; then
-            echo "⚠️ Android folder missing! Generating full Android folder..."
+          if [ ! -f "android/app/build.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
+            echo "⚠️ Minimal Android files missing! Generating full Android folder..."
             flutter create . --platforms android
           else
             echo "✅ Minimal Android folder exists"
@@ -44,8 +44,8 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 6️⃣ Lock critical plugins versions
-      - name: Lock plugins
+      # 6️⃣ Lock critical plugin versions
+      - name: Lock plugin versions
         run: |
           flutter pub add geolocator:^14.0.2
           flutter pub add audioplayers:^6.1.0
@@ -53,7 +53,7 @@ jobs:
           flutter pub get
 
       # 7️⃣ Set Android SDK versions
-      - name: Set SDK versions
+      - name: Set Android SDK versions
         run: |
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
           sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
@@ -80,6 +80,7 @@ jobs:
             exit 1
           else
             echo "✅ Launcher icon found"
+          fi
 
       # 1️⃣1️⃣ Generate Launcher Icons
       - name: Generate Launcher Icons
