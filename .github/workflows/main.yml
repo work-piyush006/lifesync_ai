@@ -85,9 +85,9 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 1️⃣3️⃣ Lock geolocator version
-      - name: Lock geolocator to 14.2.0
-        run: flutter pub add geolocator:^14.2.0
+      # 1️⃣3️⃣ Flutter doctor for debug info
+      - name: Flutter Doctor
+        run: flutter doctor -v
 
       # 1️⃣4️⃣ Build Release APK
       - name: Build Release APK
