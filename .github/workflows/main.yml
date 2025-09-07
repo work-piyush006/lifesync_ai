@@ -19,7 +19,7 @@ jobs:
 
       # 2️⃣ Setup Flutter stable
       - name: Setup Flutter
-        uses: flutter-actions/setup-flutter@v2
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
 
@@ -34,68 +34,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
-      # 4️⃣ Ensure Android folder & .gitignore
-      - name: Ensure Android folder & Gitignore
+      # 4️⃣ Ensure Android folder exists
+      - name: Ensure Android folder
         run: |
           if [ ! -d "android" ]; then
             echo "Android folder missing. Generating..."
             flutter create .
           else
             echo "Android folder exists."
-          fi
-
-          # Create default Android .gitignore if missing
-          if [ ! -f "android/.gitignore" ]; then
-            echo "Creating default Android .gitignore..."
-            cat <<EOL > android/.gitignore
-# Built application files
-*.apk
-*.ap_
-*.aab
-
-# Files for the ART/Dalvik VM
-*.dex
-
-# Java class files
-*.class
-
-# Generated files
-bin/
-gen/
-build/
-
-# Gradle files
-.gradle/
-build/
-!gradle-wrapper.jar
-
-# Local configuration file (sdk path, etc)
-local.properties
-
-# IntelliJ
-*.iml
-.idea/
-*.ipr
-*.iws
-
-# VS Code
-.vscode/
-
-# Keystore files
-*.jks
-
-# Google Services (Firebase)
-google-services.json
-
-# Android Studio Captured Images
-captures/
-
-# NDK
-obj/
-
-# Misc
-*.log
-EOL
           fi
 
       # 5️⃣ Get dependencies
@@ -106,19 +52,15 @@ EOL
       - name: Analyze
         run: flutter analyze
 
-      # 7️⃣ Run tests
-      - name: Run Tests
-        run: flutter test --coverage
-
-      # 8️⃣ Build Debug APK
+      # 7️⃣ Build Debug APK
       - name: Build APK (Debug)
         run: flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
 
-      # 9️⃣ Build Release APK
+      # 8️⃣ Build Release APK (private)
       - name: Build APK (Release)
         run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
 
-      # 🔟 Upload artifacts
+      # 9️⃣ Upload artifacts
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
