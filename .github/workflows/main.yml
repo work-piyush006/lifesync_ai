@@ -11,91 +11,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # 1️⃣ Checkout code
+      - uses: actions/checkout@v4
 
       # 2️⃣ Setup Flutter
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.3'
 
-      # 3️⃣ Cache Flutter dependencies
-      - name: Cache Flutter Pub
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.pub-cache
-            .packages
-          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
-
-      # 4️⃣ Ensure Android folder exists
+      # 3️⃣ Ensure Android folder exists (before pub get!)
       - name: Ensure Android folder
         run: |
           if [ ! -d "android/app" ]; then
-            echo "⚡ Android folder missing. Creating project..."
             flutter create .
           else
-            echo "✅ Android folder exists, skipping creation."
+            echo "✅ Android folder exists"
           fi
 
-      # 5️⃣ Install dependencies
-      - name: Install dependencies
-        run: flutter pub get
-
-      # 6️⃣ Check launcher icon exists
-      - name: Check launcher icon
-        run: |
-          if [ ! -f "assets/logo.png" ]; then
-            echo "❌ assets/logo.png not found!"
-            exit 1
-          else
-            echo "✅ Launcher icon found"
-          fi
-
-      # 7️⃣ Generate Launcher Icons (only if Android exists)
-      - name: Generate Launcher Icons
-        run: |
-          if [ -d "android/app" ]; then
-            flutter pub run flutter_launcher_icons
-          else
-            echo "⚠️ Android folder missing, skipping launcher icon generation"
-          fi
-
-      # 8️⃣ Force Gradle version
-      - name: Force Gradle version
-        run: |
-          sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
-
-      # 9️⃣ Generate local.properties for CI
-      - name: Generate local.properties
+      # 4️⃣ Force Gradle & Android SDK versions BEFORE plugin evaluation
+      - name: Setup Android SDK & Gradle
         run: |
           echo "flutter.sdk=/opt/hostedtoolcache/flutter/stable-3.24.3-x64" > android/local.properties
           echo "sdk.dir=/usr/lib/android-sdk" >> android/local.properties
-
-      # 🔟 Set Android SDK versions
-      - name: Set Android SDK versions
-        run: |
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
           sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
           sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
+          sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
 
-      # 1️⃣1️⃣ Clean Flutter project
-      - name: Clean Flutter project
-        run: flutter clean
+      # 5️⃣ Install dependencies
+      - run: flutter pub get
 
-      # 1️⃣2️⃣ Get Flutter dependencies again
-      - name: Get Flutter dependencies
-        run: flutter pub get
+      # 6️⃣ Generate launcher icons (only after Android exists)
+      - run: flutter pub run flutter_launcher_icons
 
-      # 1️⃣3️⃣ Build Release APK
-      - name: Build Release APK
-        run: flutter build apk --release --no-shrink
+      # 7️⃣ Clean project
+      - run: flutter clean
 
-      # 1️⃣4️⃣ Upload Release APK
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
+      # 8️⃣ Get dependencies again (safe)
+      - run: flutter pub get
+
+      # 9️⃣ Build release APK
+      - run: flutter build apk --release --no-shrink
+
+      # 🔟 Upload artifact
+      - uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
