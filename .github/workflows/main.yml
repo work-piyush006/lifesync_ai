@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -30,11 +30,11 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure Android folder exists
+      # 4️⃣ Ensure full Android folder exists
       - name: Ensure Android folder
         run: |
-          if [ ! -d "android" ] || [ ! -f "android/app/build.gradle" ]; then
-            echo "⚠️ Android folder missing or incomplete! Generating..."
+          if [ ! -d "android" ] || [ ! -f "android/app/build.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
+            echo "⚠️ Android folder missing or incomplete! Generating full Android folder..."
             flutter create . --platforms android
           else
             echo "✅ Android folder exists"
@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 6️⃣ Lock critical plugins versions
+      # 6️⃣ Lock critical plugin versions
       - name: Lock plugins versions
         run: |
           flutter pub add geolocator:^14.0.2
@@ -84,7 +84,7 @@ jobs:
       - name: Generate Launcher Icons
         run: flutter pub run flutter_launcher_icons
 
-      # 1️⃣2️⃣ Clean Flutter project
+      # 1️⃣2️⃣ Clean project
       - name: Clean Flutter project
         run: flutter clean
 
@@ -92,11 +92,11 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 1️⃣4️⃣ Build Release APK
+      # 1️⃣4️⃣ Build release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 1️⃣5️⃣ Upload Release APK
+      # 1️⃣5️⃣ Upload APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
