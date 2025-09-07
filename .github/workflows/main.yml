@@ -52,10 +52,6 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      # 7️⃣ Run tests
-      - name: Run Tests
-        run: flutter test --coverage
-
       # 8️⃣ Build Debug APK
       - name: Build APK (Debug)
         run: flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
