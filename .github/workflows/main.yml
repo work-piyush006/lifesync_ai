@@ -15,13 +15,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Flutter (latest stable)
+      # 2️⃣ Setup Flutter (latest stable)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.3'
 
-      # 3️⃣ Ensure Android folder exists
+      # 3️⃣ Cache Flutter dependencies
+      - name: Cache Flutter Pub
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            .packages
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
+
+      # 4️⃣ Ensure Android folder exists
       - name: Ensure Android folder
         run: |
           if [ ! -d "android/app" ] || [ -z "$(ls -A android)" ]; then
@@ -31,33 +40,47 @@ jobs:
             echo "✅ Android folder exists."
           fi
 
-      # 4️⃣ Install dependencies
+      # 5️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Generate Launcher Icons (custom logo)
+      # 6️⃣ Check if launcher icon exists
+      - name: Check launcher icon
+        run: |
+          if [ ! -f "assets/logo.png" ]; then
+            echo "❌ assets/logo.png not found!"
+            exit 1
+          else
+            echo "✅ Launcher icon found"
+          fi
+
+      # 7️⃣ Generate Launcher Icons
       - name: Generate Launcher Icons
         run: flutter pub run flutter_launcher_icons
 
-      # 6️⃣ Force Gradle version for compatibility
+      # 8️⃣ Force Gradle version
       - name: Force Gradle version
         run: |
           sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
           echo "✅ Forced Gradle 8.6"
 
-      # 7️⃣ Set SDK versions for plugins (compileSdkVersion 35)
+      # 9️⃣ Set SDK versions
       - name: Set SDK versions
         run: |
-          echo "⚡ Updating compileSdkVersion and targetSdkVersion to 35..."
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
           sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
+          sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
           echo "✅ SDK versions set"
 
-      # 8️⃣ Build Release APK
-      - name: Build Release APK
-        run: flutter build apk --release
+      # 🔟 Flutter doctor for debug info
+      - name: Flutter Doctor
+        run: flutter doctor -v
 
-      # 9️⃣ Upload Release APK as artifact
+      # 1️⃣1️⃣ Build Release APK
+      - name: Build Release APK
+        run: flutter build apk --release --no-shrink
+
+      # 1️⃣2️⃣ Upload Release APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
