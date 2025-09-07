@@ -1,24 +1,5 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
-}
-
-android {
-    namespace "com.example.lifesync_ai"
-    compileSdkVersion 35
-
-    defaultConfig {
-        applicationId "com.example.lifesync_ai"
-        minSdkVersion 21
-        targetSdkVersion 35
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-    }
-
-    buildTypes {
-        release {
-            signingConfig signingConfigs.debug
-        }
-    }
+    id "dev.flutter.flutter-plugin-loader"
 }
