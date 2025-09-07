@@ -1,27 +1,46 @@
-name: lifesync_ai
-description: A full-featured AI alarm app with UPI penalty, streaks, coins, and unlock modes.
+name: lifesync_ai_alarm
+description: LifeSync AI Alarm App (One-file build)
+publish_to: "none"
+
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_local_notifications: ^17.0.0
-  audioplayers: ^6.0.0
-  shared_preferences: ^2.2.2
+
+  # Notifications & alarms
+  flutter_local_notifications: ^17.2.1
   timezone: ^0.9.2
   intl: ^0.19.0
+
+  # Audio
+  audioplayers: ^6.1.0
+  record: ^5.1.2
+
+  # Storage
+  shared_preferences: ^2.3.2
+  path_provider: ^2.1.4
+
+  # Permissions & unlock modes
+  permission_handler: ^11.3.1
+  local_auth: ^2.3.0
+  pedometer: ^4.0.1
+  geolocator: ^12.0.0
+  file_picker: ^8.0.5
+
+  # Core Flutter material icons/fonts
+  flutter_svg: ^2.0.10
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/alarm.mp3
-    - assets/qr.png
