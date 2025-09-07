@@ -28,7 +28,7 @@ dependencies:
   permission_handler: ^11.3.1
   local_auth: ^2.3.0
   pedometer: ^4.0.1
-  geolocator: ^12.2.0
+  geolocator: ^14.0.2
   file_picker: ^8.0.5
 
   # Core Flutter material icons/fonts
