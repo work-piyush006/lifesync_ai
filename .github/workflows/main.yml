@@ -34,8 +34,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
-      # 4️⃣ Generate missing folders (android/ios)
-      - name: Ensure Flutter project structure
+      # 4️⃣ Ensure Android folder & .gitignore
+      - name: Ensure Android folder & Gitignore
         run: |
           if [ ! -d "android" ]; then
             echo "Android folder missing. Generating..."
@@ -43,7 +43,60 @@ jobs:
           else
             echo "Android folder exists."
           fi
-          "flutter create"
+
+          # Create default Android .gitignore if missing
+          if [ ! -f "android/.gitignore" ]; then
+            echo "Creating default Android .gitignore..."
+            cat <<EOL > android/.gitignore
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+build/
+
+# Gradle files
+.gradle/
+build/
+!gradle-wrapper.jar
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# IntelliJ
+*.iml
+.idea/
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Keystore files
+*.jks
+
+# Google Services (Firebase)
+google-services.json
+
+# Android Studio Captured Images
+captures/
+
+# NDK
+obj/
+
+# Misc
+*.log
+EOL
+          fi
 
       # 5️⃣ Get dependencies
       - name: Flutter Pub Get
@@ -52,6 +105,10 @@ jobs:
       # 6️⃣ Analyze code
       - name: Analyze
         run: flutter analyze
+
+      # 7️⃣ Run tests
+      - name: Run Tests
+        run: flutter test --coverage
 
       # 8️⃣ Build Debug APK
       - name: Build APK (Debug)
