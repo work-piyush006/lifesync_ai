@@ -30,11 +30,13 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure Android folder exists
+      # 4️⃣ Ensure Android folder exists (do NOT overwrite if exists)
       - name: Ensure Android folder
         run: |
-          if [ ! -d "android/app" ] || [ -z "$(ls -A android)" ]; then
+          if [ ! -d "android/app" ]; then
             flutter create .
+          else
+            echo "✅ Android folder exists, skipping creation."
           fi
 
       # 5️⃣ Install dependencies
@@ -47,6 +49,8 @@ jobs:
           if [ ! -f "assets/logo.png" ]; then
             echo "❌ assets/logo.png not found!"
             exit 1
+          else
+            echo "✅ Launcher icon found"
           fi
 
       # 7️⃣ Generate Launcher Icons
@@ -63,6 +67,7 @@ jobs:
         run: |
           echo "flutter.sdk=/opt/hostedtoolcache/flutter/stable-3.24.3-x64" > android/local.properties
           echo "sdk.dir=/usr/lib/android-sdk" >> android/local.properties
+          echo "✅ Created local.properties"
 
       # 🔟 Set SDK versions
       - name: Set SDK versions
@@ -70,6 +75,7 @@ jobs:
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
           sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
           sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
+          echo "✅ SDK versions set"
 
       # 1️⃣1️⃣ Clean Flutter project
       - name: Clean Flutter project
@@ -79,11 +85,15 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 1️⃣3️⃣ Build Release APK
+      # 1️⃣3️⃣ Lock geolocator version
+      - name: Lock geolocator to 14.2.0
+        run: flutter pub add geolocator:^14.2.0
+
+      # 1️⃣4️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 1️⃣4️⃣ Upload Release APK
+      # 1️⃣5️⃣ Upload Release APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
