@@ -1,0 +1,60 @@
+name: Flutter Build CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    env:
+      FLUTTER_VERSION: '3.13.10' # Change to your Flutter version
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Enable Flutter web (optional)
+        run: flutter config --enable-web
+
+      - name: Flutter Pub Get
+        run: flutter pub get
+
+      - name: Cache Pub Packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run Tests
+        run: flutter test --coverage
+
+      - name: Build APK (Debug)
+        run: flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
+
+      - name: Build APK (Release)
+        run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v3
+        with:
+          name: lifesync-apks
+          path: build/app/outputs/flutter-apk/*.apk
