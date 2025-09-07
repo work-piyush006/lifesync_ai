@@ -13,21 +13,18 @@ jobs:
     name: Build APK
     runs-on: ubuntu-latest
 
-    env:
-      FLUTTER_VERSION: '3.13.10' # Change to your Flutter version
-
     steps:
-      # 1️⃣ Checkout code
+      # 1️⃣ Checkout repo
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Flutter
+      # 2️⃣ Setup Flutter (stable channel)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version: stable
 
-      # 3️⃣ Enable Flutter web (optional, ignore if not used)
+      # 3️⃣ Enable Flutter web (optional)
       - name: Enable Flutter web
         run: flutter config --enable-web
 
