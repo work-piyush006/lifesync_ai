@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace "com.example.lifesync_ai_alarm"
+    namespace "com.example.lifesync_ai"
     compileSdkVersion 35
 
     defaultConfig {
-        applicationId "com.example.lifesync_ai_alarm"
+        applicationId "com.example.lifesync_ai"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 1
-        versionName "1.0"
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
     }
 
     buildTypes {
@@ -21,12 +21,4 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-}
-
-flutter {
-    source '../..'
-}
-
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
