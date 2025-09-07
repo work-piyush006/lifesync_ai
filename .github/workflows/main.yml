@@ -34,24 +34,19 @@ jobs:
       - name: Ensure Android folder
         run: |
           if [ ! -d "android/app" ] || [ -z "$(ls -A android)" ]; then
-            echo "⚡ Android folder missing/empty. Creating fresh project structure..."
             flutter create .
-          else
-            echo "✅ Android folder exists."
           fi
 
       # 5️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 6️⃣ Check if launcher icon exists
+      # 6️⃣ Check launcher icon exists
       - name: Check launcher icon
         run: |
           if [ ! -f "assets/logo.png" ]; then
             echo "❌ assets/logo.png not found!"
             exit 1
-          else
-            echo "✅ Launcher icon found"
           fi
 
       # 7️⃣ Generate Launcher Icons
@@ -62,48 +57,57 @@ jobs:
       - name: Force Gradle version
         run: |
           sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
-          echo "✅ Forced Gradle 8.6"
 
-      # 9️⃣ Generate local.properties for CI (Flutter + Android SDK paths)
+      # 9️⃣ Generate local.properties
       - name: Generate local.properties
         run: |
           echo "flutter.sdk=/opt/hostedtoolcache/flutter/stable-3.24.3-x64" > android/local.properties
           echo "sdk.dir=/usr/lib/android-sdk" >> android/local.properties
-          echo "✅ Created local.properties"
 
-      # 🔟 Apply Flutter Gradle plugin (must be done in settings.gradle)
-      - name: Ensure Flutter plugin applied
+      # 🔟 Patch settings.gradle to fix flutterRoot issue
+      - name: Patch settings.gradle
         run: |
-          if ! grep -q "apply from:.*flutter.gradle" android/settings.gradle; then
-            echo "Applying Flutter Gradle plugin to settings.gradle"
-            echo -e "\napply from: \"\$flutterRoot/packages/flutter_tools/gradle/flutter.gradle\"" >> android/settings.gradle
-          fi
+          cat << 'EOF' > android/settings.gradle
+import java.util.Properties
 
-      # 1️⃣1️⃣ Set SDK versions before plugin evaluation
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterSdkPath = localProperties.getProperty('flutter.sdk')
+if (flutterSdkPath == null) {
+    throw new GradleException("flutter.sdk not set in local.properties")
+}
+
+apply from: "$flutterSdkPath/packages/flutter_tools/gradle/flutter.gradle"
+
+include ':app'
+EOF
+
+      # 1️⃣1️⃣ Set SDK versions
       - name: Set SDK versions
         run: |
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
           sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
           sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
-          echo "✅ SDK versions set"
 
-      # 1️⃣2️⃣ Flutter doctor for debug info
-      - name: Flutter Doctor
-        run: flutter doctor -v
-
-      # 1️⃣3️⃣ Clean build artifacts
+      # 1️⃣2️⃣ Clean Flutter project
       - name: Clean Flutter project
         run: flutter clean
 
-      # 1️⃣4️⃣ Get dependencies again
+      # 1️⃣3️⃣ Get Flutter dependencies again
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 1️⃣5️⃣ Build Release APK
+      # 1️⃣4️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 1️⃣6️⃣ Upload Release APK
+      # 1️⃣5️⃣ Upload Release APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
