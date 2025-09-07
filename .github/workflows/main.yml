@@ -1,71 +1,40 @@
-name: LifeSync AI Alarm Release Build CI
+name: Flutter Build APK
 
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # 2️⃣ Setup Flutter stable
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.24.3'
 
-      # 3️⃣ Cache pub packages
-      - name: Cache Pub Packages
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.pub-cache
-            .dart_tool
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
-      # 4️⃣ Ensure Android folder exists
-      - name: Ensure Android folder
+      - name: Create Android folder if missing
         run: |
-          if [ ! -d "android" ]; then
-            echo "Android folder missing. Generating..."
+          if [ ! -d "android/app" ]; then
+            echo "⚡ Android folder missing. Creating fresh..."
             flutter create .
           else
-            echo "Android folder exists."
+            echo "✅ Android folder already exists."
           fi
-
-      # 5️⃣ Install Flutter dependencies
-      - name: Flutter Pub Get
+      - name: Install dependencies
         run: flutter pub get
 
-      # 6️⃣ Enable core library desugaring (for plugins like flutter_local_notifications)
-      - name: Setup Gradle properties
-        run: |
-          sed -i '/^android {/a \
-              compileOptions {\
-                  sourceCompatibility JavaVersion.VERSION_1_8\
-                  targetCompatibility JavaVersion.VERSION_1_8\
-              }' android/app/build.gradle
-          sed -i '/^dependencies {/a \
-              coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.3"' android/app/build.gradle
+     - name: Build APK
+        run: flutter build apk --release
 
-      # 7️⃣ Build Release APK only (private)
-      - name: Build Release APK
-        run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64 --no-tree-shake-icons
-
-      # 8️⃣ Upload Release APK artifact
-      - name: Upload Release APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lifesync-release-apk
+          name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
