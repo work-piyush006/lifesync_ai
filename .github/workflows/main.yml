@@ -35,13 +35,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Force Gradle version for compatibility
+      # 5️⃣ Generate Launcher Icons (custom logo)
+      - name: Generate Launcher Icons
+        run: flutter pub run flutter_launcher_icons:main
+
+      # 6️⃣ Force Gradle version for compatibility
       - name: Force Gradle version
         run: |
           sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
           echo "✅ Forced Gradle 8.6"
 
-      # 6️⃣ Set SDK versions for plugins (compileSdkVersion 35)
+      # 7️⃣ Set SDK versions for plugins (compileSdkVersion 35)
       - name: Set SDK versions
         run: |
           echo "⚡ Updating compileSdkVersion and targetSdkVersion to 35..."
@@ -49,11 +53,11 @@ jobs:
           sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
           echo "✅ SDK versions set"
 
-      # 7️⃣ Build Release APK
+      # 8️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release
 
-      # 8️⃣ Upload Release APK as artifact
+      # 9️⃣ Upload Release APK as artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
