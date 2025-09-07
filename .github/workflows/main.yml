@@ -44,14 +44,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 6️⃣ Lock critical plugins versions
-      - name: Lock plugin versions
-        run: |
-          flutter pub add geolocator:^14.2.0
-          flutter pub add audioplayers:^6.1.0
-          flutter pub add flutter_plugin_android_lifecycle:^2.0.26
-          flutter pub get
-
       # 7️⃣ Set Android SDK versions
       - name: Set Android SDK versions
         run: |
