@@ -71,7 +71,15 @@ jobs:
           echo "sdk.dir=/usr/lib/android-sdk" >> android/local.properties
           echo "✅ Created local.properties"
 
-      # 🔟 Set SDK versions before plugin evaluation
+      # 🔟 Apply Flutter Gradle plugin (must be done in settings.gradle)
+      - name: Ensure Flutter plugin applied
+        run: |
+          if ! grep -q "apply from:.*flutter.gradle" android/settings.gradle; then
+            echo "Applying Flutter Gradle plugin to settings.gradle"
+            echo -e "\napply from: \"\$flutterRoot/packages/flutter_tools/gradle/flutter.gradle\"" >> android/settings.gradle
+          fi
+
+      # 1️⃣1️⃣ Set SDK versions before plugin evaluation
       - name: Set SDK versions
         run: |
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
@@ -79,23 +87,23 @@ jobs:
           sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
           echo "✅ SDK versions set"
 
-      # 1️⃣1️⃣ Flutter doctor for debug info
+      # 1️⃣2️⃣ Flutter doctor for debug info
       - name: Flutter Doctor
         run: flutter doctor -v
 
-      # 1️⃣2️⃣ Clean build artifacts
+      # 1️⃣3️⃣ Clean build artifacts
       - name: Clean Flutter project
         run: flutter clean
 
-      # 1️⃣3️⃣ Get dependencies again
+      # 1️⃣4️⃣ Get dependencies again
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 1️⃣4️⃣ Build Release APK
+      # 1️⃣5️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 1️⃣5️⃣ Upload Release APK
+      # 1️⃣6️⃣ Upload Release APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
