@@ -1,15 +1,13 @@
-include ':app'
-
-def flutterProjectRoot = rootDir.getAbsoluteFile().getParentFile().getPath()
-def flutterSdkPath = new File(flutterProjectRoot, "flutter_sdk_path.txt")
-
-def localPropertiesFile = new File(rootDir, "local.properties")
-def properties = new Properties()
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader("UTF-8") { reader -> properties.load(reader) }
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
 }
 
-def flutterSdk = properties.getProperty("flutter.sdk")
-assert flutterSdk != null, "flutter.sdk not set in local.properties"
+plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+}
 
-apply from: "$flutterSdk/packages/flutter_tools/gradle/app_plugin_loader.gradle"
+include(":app")
