@@ -30,32 +30,22 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure Android folder + essential files exist
+      # 4️⃣ Ensure Android folder (generate if missing)
       - name: Ensure Android folder
         run: |
           if [ ! -f "android/app/build.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
             echo "⚠️ Minimal Android files missing! Generating full Android folder..."
             flutter create . --platforms android
+            echo "✅ Android folder generated"
           else
             echo "✅ Minimal Android folder exists"
+          fi
 
       # 5️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 6️⃣ Check outdated plugins
-      - name: Check outdated plugins
-        run: flutter pub outdated || true
-
-      # 7️⃣ Lock critical plugins versions
-      - name: Lock geolocator & fix plugin versions
-        run: |
-          flutter pub add geolocator:^14.2.0
-          flutter pub add audioplayers:^6.1.0
-          flutter pub add flutter_plugin_android_lifecycle:^2.0.26
-          flutter pub get
-
-      # 8️⃣ Set Android SDK versions
+      # 6️⃣ Set Android SDK versions
       - name: Set Android SDK versions
         run: |
           sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
@@ -63,19 +53,19 @@ jobs:
           sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
           echo "✅ SDK versions set"
 
-      # 9️⃣ Force Gradle version
+      # 7️⃣ Force Gradle version
       - name: Force Gradle version
         run: |
           sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
 
-      # 🔟 Generate local.properties
+      # 8️⃣ Generate local.properties for CI
       - name: Generate local.properties
         run: |
           echo "flutter.sdk=/opt/hostedtoolcache/flutter/stable-3.24.3-x64" > android/local.properties
           echo "sdk.dir=/usr/lib/android-sdk" >> android/local.properties
           echo "✅ local.properties created"
 
-      # 1️⃣1️⃣ Check launcher icon
+      # 9️⃣ Check launcher icon
       - name: Check launcher icon
         run: |
           if [ ! -f "assets/logo.png" ]; then
@@ -84,23 +74,23 @@ jobs:
           else
             echo "✅ Launcher icon found"
 
-      # 1️⃣2️⃣ Generate Launcher Icons
+      # 🔟 Generate Launcher Icons
       - name: Generate Launcher Icons
         run: flutter pub run flutter_launcher_icons
 
-      # 1️⃣3️⃣ Clean Flutter project
+      # 1️⃣1️⃣ Clean Flutter project
       - name: Clean Flutter project
         run: flutter clean
 
-      # 1️⃣4️⃣ Get dependencies again
+      # 1️⃣2️⃣ Get dependencies again
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 1️⃣5️⃣ Build Release APK
+      # 1️⃣3️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 1️⃣6️⃣ Upload Release APK
+      # 1️⃣4️⃣ Upload Release APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
