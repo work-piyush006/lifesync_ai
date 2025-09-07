@@ -34,15 +34,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
-      # 4️⃣ Generate missing folders (android/ios/lib)
+      # 4️⃣ Generate missing folders (android/ios)
       - name: Ensure Flutter project structure
         run: |
           if [ ! -d "android" ]; then
             echo "Android folder missing. Generating..."
             flutter create .
           else
-            echo "Android folder exists. Skipping generation."
+            echo "Android folder exists."
           fi
+          "flutter create"
 
       # 5️⃣ Get dependencies
       - name: Flutter Pub Get
