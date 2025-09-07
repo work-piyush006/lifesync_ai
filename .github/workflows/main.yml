@@ -1,4 +1,4 @@
-name: Flutter Build CI
+name: LifeSync AI Alarm Build CI
 
 on:
   push:
@@ -10,25 +10,20 @@ on:
 
 jobs:
   build:
-    name: Build APK
     runs-on: ubuntu-latest
 
     steps:
       # 1️⃣ Checkout repo
-      - name: Checkout Repo
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Flutter (stable channel)
+      # 2️⃣ Setup Flutter stable
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: flutter-actions/setup-flutter@v2
         with:
-          flutter-version: stable
+          channel: stable
 
-      # 3️⃣ Enable Flutter web (optional)
-      - name: Enable Flutter web
-        run: flutter config --enable-web
-
-      # 4️⃣ Cache pub packages
+      # 3️⃣ Cache pub packages
       - name: Cache Pub Packages
         uses: actions/cache@v3
         with:
@@ -38,6 +33,16 @@ jobs:
           key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pub-
+
+      # 4️⃣ Generate missing folders (android/ios/lib)
+      - name: Ensure Flutter project structure
+        run: |
+          if [ ! -d "android" ]; then
+            echo "Android folder missing. Generating..."
+            flutter create .
+          else
+            echo "Android folder exists. Skipping generation."
+          fi
 
       # 5️⃣ Get dependencies
       - name: Flutter Pub Get
@@ -59,7 +64,7 @@ jobs:
       - name: Build APK (Release)
         run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
 
-      # 🔟 Upload artifacts (v4)
+      # 🔟 Upload artifacts
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
