@@ -1,4 +1,4 @@
-name: Flutter Build APK
+name: LifeSync AI Alarm Build CI
 
 on:
   push:
@@ -11,29 +11,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
+      # 2️⃣ Set up Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'
+          flutter-version: '3.24.3'   # Latest stable version
 
-      - name: Create Android folder if missing
+      # 3️⃣ Create Android folder if missing or empty
+      - name: Ensure Android folder
         run: |
-          if [ ! -d "android/app" ]; then
-            echo "⚡ Android folder missing. Creating fresh..."
+          if [ ! -d "android/app" ] || [ -z "$(ls -A android)" ]; then
+            echo "⚡ Android folder missing/empty. Creating fresh project structure..."
             flutter create .
           else
-            echo "✅ Android folder already exists."
+            echo "✅ Android folder exists."
           fi
+
+      # 4️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-     - name: Build APK
+      # 5️⃣ Force Gradle version
+      - name: Force Gradle version
+        run: |
+          sed -i 's/distributionUrl=.*$/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
+          echo "✅ Forced Gradle 8.6 for compatibility"
+
+      # 6️⃣ Build Release APK
+      - name: Build Release APK
         run: flutter build apk --release
 
-      - name: Upload APK artifact
+      # 7️⃣ Upload APK artifact
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
