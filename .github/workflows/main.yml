@@ -37,7 +37,7 @@ jobs:
 
       # 5️⃣ Generate Launcher Icons (custom logo)
       - name: Generate Launcher Icons
-        run: flutter pub run flutter_launcher_icons:main
+        run: flutter pub run flutter_launcher_icons
 
       # 6️⃣ Force Gradle version for compatibility
       - name: Force Gradle version
