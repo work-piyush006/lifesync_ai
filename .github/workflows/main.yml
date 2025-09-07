@@ -44,10 +44,6 @@ jobs:
       - name: Flutter Pub Get
         run: flutter pub get
 
-      # 6️⃣ Build Debug APK
-      - name: Build APK (Debug)
-        run: flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
-
       # 7️⃣ Build Release APK (private)
       - name: Build APK (Release)
         run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
