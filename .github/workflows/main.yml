@@ -30,11 +30,12 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure Android folder exists (do NOT overwrite if exists)
-      - name: Ensure Android folder
+      # 4️⃣ Ensure Android folder exists
+      - name: Ensure Android folder exists
         run: |
           if [ ! -d "android/app" ]; then
-            flutter create .
+            echo "❌ Android folder missing! Commit android/ folder before CI build."
+            exit 1
           else
             echo "✅ Android folder exists, skipping creation."
           fi
@@ -85,15 +86,11 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 1️⃣3️⃣ Flutter doctor for debug info
-      - name: Flutter Doctor
-        run: flutter doctor -v
-
-      # 1️⃣4️⃣ Build Release APK
+      # 1️⃣3️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 1️⃣5️⃣ Upload Release APK
+      # 1️⃣4️⃣ Upload Release APK
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
