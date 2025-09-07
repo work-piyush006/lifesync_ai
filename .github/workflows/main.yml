@@ -1,4 +1,4 @@
-name: LifeSync AI Alarm Build CI
+name: LifeSync AI Alarm Release Build CI
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
@@ -34,23 +34,38 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
 
-      # 4️⃣ Ensure full Android folder (delete old if incomplete)
-      - name: Ensure full Android folder
+      # 4️⃣ Ensure Android folder exists
+      - name: Ensure Android folder
         run: |
-          rm -rf android
-          flutter create .
+          if [ ! -d "android" ]; then
+            echo "Android folder missing. Generating..."
+            flutter create .
+          else
+            echo "Android folder exists."
+          fi
 
-      # 5️⃣ Get dependencies
+      # 5️⃣ Install Flutter dependencies
       - name: Flutter Pub Get
         run: flutter pub get
 
-      # 7️⃣ Build Release APK (private)
-      - name: Build APK (Release)
-        run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
+      # 6️⃣ Enable core library desugaring (for plugins like flutter_local_notifications)
+      - name: Setup Gradle properties
+        run: |
+          sed -i '/^android {/a \
+              compileOptions {\
+                  sourceCompatibility JavaVersion.VERSION_1_8\
+                  targetCompatibility JavaVersion.VERSION_1_8\
+              }' android/app/build.gradle
+          sed -i '/^dependencies {/a \
+              coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.3"' android/app/build.gradle
 
-      # 8️⃣ Upload APKs
-      - name: Upload APKs
+      # 7️⃣ Build Release APK only (private)
+      - name: Build Release APK
+        run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64 --no-tree-shake-icons
+
+      # 8️⃣ Upload Release APK artifact
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: lifesync-apks
-          path: build/app/outputs/flutter-apk/*.apk
+          name: lifesync-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
