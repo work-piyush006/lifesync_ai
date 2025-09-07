@@ -30,24 +30,24 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure Android folder + essential files exist
+      # 4️⃣ Ensure Android folder exists (generate missing files)
       - name: Ensure Android folder
         run: |
-          if [ ! -f "android/app/build.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
-            echo "⚠️ Minimal Android files missing! Generating full Android folder..."
+          if [ ! -f "android/app/build.gradle" ] || [ ! -f "android/settings.gradle" ]; then
+            echo "⚠️ Android folder incomplete. Generating..."
             flutter create . --platforms android
           else
-            echo "✅ Minimal Android folder exists"
+            echo "✅ Android base files found"
           fi
 
       # 5️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 6️⃣ Lock critical plugin versions
+      # 6️⃣ Lock critical plugins versions
       - name: Lock plugin versions
         run: |
-          flutter pub add geolocator:^14.0.2
+          flutter pub add geolocator:^14.2.0
           flutter pub add audioplayers:^6.1.0
           flutter pub add flutter_plugin_android_lifecycle:^2.0.26
           flutter pub get
@@ -55,15 +55,17 @@ jobs:
       # 7️⃣ Set Android SDK versions
       - name: Set Android SDK versions
         run: |
-          sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
-          sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
-          sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
+          sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle || true
+          sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle || true
           echo "✅ SDK versions set"
 
       # 8️⃣ Force Gradle version
       - name: Force Gradle version
         run: |
-          sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
+          if [ -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
+            sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
+          fi
 
       # 9️⃣ Generate local.properties
       - name: Generate local.properties
