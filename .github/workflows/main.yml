@@ -15,13 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Flutter
+      # 2️⃣ Set up Flutter (latest stable)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'   # Latest stable version
+          flutter-version: '3.24.3'
 
-      # 3️⃣ Create Android folder if missing or empty
+      # 3️⃣ Ensure Android folder exists
       - name: Ensure Android folder
         run: |
           if [ ! -d "android/app" ] || [ -z "$(ls -A android)" ]; then
@@ -35,17 +35,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Force Gradle version
+      # 5️⃣ Force Gradle version for compatibility
       - name: Force Gradle version
         run: |
           sed -i 's/distributionUrl=.*$/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
-          echo "✅ Forced Gradle 8.6 for compatibility"
+          echo "✅ Forced Gradle 8.6"
 
       # 6️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release
 
-      # 7️⃣ Upload APK artifact
+      # 7️⃣ Upload Release APK as artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
