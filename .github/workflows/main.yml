@@ -64,29 +64,27 @@ jobs:
           echo "flutter.sdk=/opt/hostedtoolcache/flutter/stable-3.24.3-x64" > android/local.properties
           echo "sdk.dir=/usr/lib/android-sdk" >> android/local.properties
 
-      # 🔟 Patch settings.gradle to fix flutterRoot issue
+      # 🔟 Patch settings.gradle (fix flutterRoot error)
       - name: Patch settings.gradle
         run: |
-          cat << 'EOF' > android/settings.gradle
-import java.util.Properties
-
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
-}
-
-def flutterSdkPath = localProperties.getProperty('flutter.sdk')
-if (flutterSdkPath == null) {
-    throw new GradleException("flutter.sdk not set in local.properties")
-}
-
-apply from: "$flutterSdkPath/packages/flutter_tools/gradle/flutter.gradle"
-
-include ':app'
-EOF
+          echo "import java.util.Properties" > android/settings.gradle
+          echo "" >> android/settings.gradle
+          echo "def localProperties = new Properties()" >> android/settings.gradle
+          echo "def localPropertiesFile = rootProject.file('local.properties')" >> android/settings.gradle
+          echo "if (localPropertiesFile.exists()) {" >> android/settings.gradle
+          echo "    localPropertiesFile.withReader('UTF-8') { reader ->" >> android/settings.gradle
+          echo "        localProperties.load(reader)" >> android/settings.gradle
+          echo "    }" >> android/settings.gradle
+          echo "}" >> android/settings.gradle
+          echo "" >> android/settings.gradle
+          echo "def flutterSdkPath = localProperties.getProperty('flutter.sdk')" >> android/settings.gradle
+          echo "if (flutterSdkPath == null) {" >> android/settings.gradle
+          echo "    throw new GradleException(\"flutter.sdk not set in local.properties\")" >> android/settings.gradle
+          echo "}" >> android/settings.gradle
+          echo "" >> android/settings.gradle
+          echo "apply from: \"\$flutterSdkPath/packages/flutter_tools/gradle/flutter.gradle\"" >> android/settings.gradle
+          echo "" >> android/settings.gradle
+          echo "include ':app'" >> android/settings.gradle
 
       # 1️⃣1️⃣ Set SDK versions
       - name: Set SDK versions
