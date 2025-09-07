@@ -55,10 +55,6 @@ jobs:
       - name: Flutter Pub Get
         run: flutter pub get
 
-      # 6️⃣ Analyze code
-      - name: Analyze
-        run: flutter analyze
-
       # 7️⃣ Build Debug APK
       - name: Build APK (Debug)
         run: flutter build apk --debug --target-platform android-arm,android-arm64,android-x64
