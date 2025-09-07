@@ -30,22 +30,21 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure minimal Android folder
+      # 4️⃣ Ensure Android folder exists
       - name: Ensure Android folder
         run: |
-          if [ ! -f "android/app/build.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
-            echo "⚠️ Minimal Android files missing! Generating Android folder..."
+          if [ ! -d "android" ] || [ ! -f "android/app/build.gradle" ]; then
+            echo "⚠️ Android folder missing or incomplete! Generating..."
             flutter create . --platforms android
           else
-            echo "✅ Minimal Android folder exists"
-          fi
+            echo "✅ Android folder exists"
 
       # 5️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
       # 6️⃣ Lock critical plugins versions
-      - name: Lock geolocator & other plugins
+      - name: Lock plugins versions
         run: |
           flutter pub add geolocator:^14.0.2
           flutter pub add audioplayers:^6.1.0
@@ -65,7 +64,7 @@ jobs:
         run: |
           sed -i 's|distributionUrl=.*|distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
 
-      # 9️⃣ Generate local.properties for CI
+      # 9️⃣ Generate local.properties
       - name: Generate local.properties
         run: |
           echo "flutter.sdk=/opt/hostedtoolcache/flutter/stable-3.24.3-x64" > android/local.properties
@@ -80,7 +79,6 @@ jobs:
             exit 1
           else
             echo "✅ Launcher icon found"
-          fi
 
       # 1️⃣1️⃣ Generate Launcher Icons
       - name: Generate Launcher Icons
