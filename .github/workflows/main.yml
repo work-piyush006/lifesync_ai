@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -30,8 +30,8 @@ jobs:
             .packages
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
 
-      # 4️⃣ Ensure minimal Android files exist
-      - name: Ensure Android folder
+      # 4️⃣ Ensure minimal Android folder
+      - name: Ensure minimal Android folder
         run: |
           if [ ! -f "android/app/build.gradle" ] || [ ! -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
             echo "⚠️ Minimal Android files missing! Generating full Android folder..."
@@ -44,7 +44,7 @@ jobs:
         run: flutter pub get
 
       # 6️⃣ Lock critical plugin versions
-      - name: Lock plugin versions
+      - name: Lock critical plugins
         run: |
           flutter pub add geolocator:^14.0.2
           flutter pub add audioplayers:^6.1.0
