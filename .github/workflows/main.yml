@@ -47,6 +47,16 @@ jobs:
           sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 35/' android/app/build.gradle || true
           echo "✅ SDK versions set to 35"
 
+          # 5️⃣ Patch Gradle & SDK versions
+      - name: Patch Android Gradle
+        run: |
+          # Root build.gradle
+          sed -i 's/com.android.tools.build:gradle:[0-9.]*/com.android.tools.build:gradle:8.5.2/' android/build.gradle || true
+          # App build.gradle
+          sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 35/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 35/' android/app/build.gradle || true
+          sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 23/' android/app/build.gradle || true
+
       # 6️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
