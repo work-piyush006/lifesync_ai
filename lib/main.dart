@@ -56,20 +56,20 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   tz.initializeTimeZones();
 
-  const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-  final InitializationSettings initSettings = InitializationSettings(android: androidInit);
+  const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initSettings = InitializationSettings(android: androidInit);
 
-  await localNotif.initialize(initSettings, onDidReceiveNotificationResponse: (response) {
-    // payload contains alarmId
-    final payload = response.payload;
-    // Launch the app into AlarmRingScreen with payload later
-    // We'll just run app; the LifeSyncApp will check initial payload
-    runApp(LifeSyncApp(initialAlarmPayload: payload));
-  });
+  String? initialPayload;
 
-  runApp(const LifeSyncApp());
+  await localNotif.initialize(
+    initSettings,
+    onDidReceiveNotificationResponse: (response) {
+      initialPayload = response.payload; // store payload when tapped
+    },
+  );
+
+  runApp(LifeSyncApp(initialAlarmPayload: initialPayload));
 }
-
 // ================== Models & Keys ==================
 class AlarmItem {
   final int id;
