@@ -15,53 +15,47 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Flutter (latest stable)
+      # 2️⃣ Set up Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.3'
 
-      # 3️⃣ Ensure Android folder exists (SAFE CHECK ✅)
+      # 3️⃣ Ensure Android folder exists
       - name: Ensure Android folder
         run: |
-          if [ ! -d "android/app" ]; then
-            echo "⚡ Android folder missing. Creating..."
+          if [ ! -d "android/app" ] || [ -z "$(ls -A android)" ]; then
+            echo "⚡ Android folder missing/empty. Creating fresh project structure..."
             flutter create .
           else
-            echo "✅ Android folder exists, skipping recreate."
+            echo "✅ Android folder exists."
           fi
 
       # 4️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Force Gradle + SDK versions for compatibility
-      - name: Force Gradle + SDK versions
-        run: |
-          # Force Gradle 8.6
-          sed -i 's#distributionUrl=.*#distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip#' android/gradle/wrapper/gradle-wrapper.properties
-          echo "✅ Forced Gradle 8.6"
-
-          # Ensure compileSdkVersion & targetSdkVersion 35
-          sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 35/' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 35/' android/app/build.gradle || true
-          echo "✅ SDK versions set to 35"
-
-          # 5️⃣ Patch Gradle & SDK versions
+      # 5️⃣ Patch Gradle & SDK versions
       - name: Patch Android Gradle
         run: |
-          # Root build.gradle
+          echo "⚡ Patching Gradle + SDK..."
           sed -i 's/com.android.tools.build:gradle:[0-9.]*/com.android.tools.build:gradle:8.5.2/' android/build.gradle || true
-          # App build.gradle
           sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 35/' android/app/build.gradle || true
           sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 35/' android/app/build.gradle || true
           sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 23/' android/app/build.gradle || true
+          echo "✅ Patched Gradle + SDK"
 
-      # 6️⃣ Build Release APK
+      # 6️⃣ Force Gradle Wrapper version
+      - name: Force Gradle Wrapper
+        run: |
+          sed -i 's/distributionUrl=.*/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
+          echo "✅ Forced Gradle 8.6"
+
+      # 7️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 7️⃣ Upload Release APK as artifact
+      # 8️⃣ Upload Release APK as artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
