@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -31,25 +31,28 @@ jobs:
             echo "✅ Android folder exists."
           fi
 
+      # 3.5️⃣ Force compileSdkVersion & targetSdkVersion
+      - name: Force compileSdkVersion
+        run: |
+          sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle || true
+          echo "✅ compileSdkVersion & targetSdkVersion forced to 35"
+
       # 4️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Generate custom launcher icons
-      - name: Generate App Icons
-        run: flutter pub run flutter_launcher_icons:main
-
-      # 6️⃣ Force Gradle version for SDK compatibility
+      # 5️⃣ Force Gradle version for compatibility
       - name: Force Gradle version
         run: |
           sed -i 's/distributionUrl=.*$/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
           echo "✅ Forced Gradle 8.6"
 
-      # 7️⃣ Build release APK
+      # 6️⃣ Build Release APK
       - name: Build Release APK
         run: flutter build apk --release --no-shrink
 
-      # 8️⃣ Upload APK artifact
+      # 7️⃣ Upload Release APK as artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
