@@ -21,32 +21,31 @@ jobs:
         with:
           flutter-version: '3.24.3'
 
-      # 3️⃣ Ensure Android folder exists
+      # 3️⃣ Ensure Android folder exists (SAFE CHECK ✅)
       - name: Ensure Android folder
         run: |
-          if [ ! -d "android/app" ] || [ -z "$(ls -A android)" ]; then
-            echo "⚡ Android folder missing/empty. Creating fresh project structure..."
+          if [ ! -d "android/app" ]; then
+            echo "⚡ Android folder missing. Creating..."
             flutter create .
           else
-            echo "✅ Android folder exists."
+            echo "✅ Android folder exists, skipping recreate."
           fi
-
-      # 3.5️⃣ Force compileSdkVersion & targetSdkVersion
-      - name: Force compileSdkVersion
-        run: |
-          sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle || true
-          echo "✅ compileSdkVersion & targetSdkVersion forced to 35"
 
       # 4️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Force Gradle version for compatibility
-      - name: Force Gradle version
+      # 5️⃣ Force Gradle + SDK versions for compatibility
+      - name: Force Gradle + SDK versions
         run: |
-          sed -i 's/distributionUrl=.*$/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' android/gradle/wrapper/gradle-wrapper.properties
+          # Force Gradle 8.6
+          sed -i 's#distributionUrl=.*#distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip#' android/gradle/wrapper/gradle-wrapper.properties
           echo "✅ Forced Gradle 8.6"
+
+          # Ensure compileSdkVersion & targetSdkVersion 35
+          sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 35/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 35/' android/app/build.gradle || true
+          echo "✅ SDK versions set to 35"
 
       # 6️⃣ Build Release APK
       - name: Build Release APK
